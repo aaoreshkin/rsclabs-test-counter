@@ -1,8 +1,6 @@
 package inmemory
 
 import (
-	"hash/fnv"
-	"strconv"
 	"sync"
 )
 
@@ -39,12 +37,8 @@ func New(size int) *Cache {
 	return &Cache{shards}
 }
 
-// Возвращает шард для указанного ID баннера на основе хэш-функции.
-// Использует FNV-1a хэш для равномерного распределения данных по шардам.
-// Гарантирует, что один и тот же ID всегда попадет в один и тот же шард.
+// Возвращает шард для указанного ID баннера.
+// Использует простое деление по модулю для быстрого распределения.
 func (c *Cache) GetShard(id int) *shard {
-	h := fnv.New32a()
-	h.Write([]byte(strconv.Itoa(id)))
-
-	return c.Shards[uint(h.Sum32())%uint(len(c.Shards))]
+	return c.Shards[id%len(c.Shards)]
 }

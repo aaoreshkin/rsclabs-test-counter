@@ -3,7 +3,6 @@ package common
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -20,7 +19,19 @@ func DecodeJSON[T any](r *http.Request) (*T, error) {
 }
 
 // Извлекает целочисленный параметр из URL пути HTTP запроса.
-// Использует chi для получения параметра и конвертирует его в int.
 func IntParam(r *http.Request, param string) (int, error) {
-	return strconv.Atoi(chi.URLParam(r, param))
+	s := chi.URLParam(r, param)
+	if s == "" {
+		return 0, fmt.Errorf("parameter %s not found", param)
+	}
+
+	result := 0
+
+	for i := 0; i < len(s); i++ {
+		if s[i] < '0' || s[i] > '9' {
+			return 0, fmt.Errorf("invalid integer: %s", s)
+		}
+		result = result*10 + int(s[i]-'0')
+	}
+	return result, nil
 }

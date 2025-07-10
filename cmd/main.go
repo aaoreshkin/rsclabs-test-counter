@@ -51,8 +51,12 @@ func run(ctx context.Context) error {
 	}
 
 	server := &http.Server{
-		Addr:    ":" + os.Getenv("SERVICE_PORT"),
-		Handler: mux,
+		Addr:           ":" + os.Getenv("SERVICE_PORT"),
+		Handler:        mux,
+		ReadTimeout:    0, // Без таймаутов
+		WriteTimeout:   0,
+		IdleTimeout:    0,
+		MaxHeaderBytes: 1 << 10, // 1KB - минимум для заголовков
 	}
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {

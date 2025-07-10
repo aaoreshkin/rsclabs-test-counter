@@ -27,16 +27,14 @@ func New(usecase model.Usecase) *Controller {
 // Обрабатывает клики по баннеру, увеличивая счетчик на 1.
 // Ожидает bannerID в параметрах запроса. Возвращает 204 No Content.
 func (c *Controller) HandleClick(w http.ResponseWriter, r *http.Request) {
-
 	bannerID, err := common.IntParam(r, "bannerID")
 	if err != nil {
-		http.Error(w, "invalid bannerID", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	c.usecase.Increment(bannerID)
-
-	w.WriteHeader(http.StatusNoContent) // Снимаем нагрузку с ответа
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // Возвращает статистику по баннеру за указанный период.
@@ -51,7 +49,6 @@ func (c *Controller) HandleStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Сейм
 	data, err := common.DecodeJSON[model.Stats](r)
 	if err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)

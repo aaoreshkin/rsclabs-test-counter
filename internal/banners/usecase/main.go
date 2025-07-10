@@ -14,6 +14,7 @@ type (
 	Usecase struct {
 		repository model.Repository
 		cache      *inmemory.Cache
+		buffer     map[int]int64 // переиспользуемый буфер
 	}
 )
 
@@ -22,6 +23,7 @@ func New(repository model.Repository, cache *inmemory.Cache) *Usecase {
 	return &Usecase{
 		repository: repository,
 		cache:      cache,
+		buffer:     make(map[int]int64),
 	}
 }
 
@@ -43,18 +45,21 @@ func (u *Usecase) FlushToDB(ctx context.Context) {
 	for _, sh := range u.cache.Shards {
 		sh.Mu.Lock()
 
-		batch := make(map[int]int64, len(sh.Data))
+		// Очищаем переиспользуемый буфер
+		for k := range u.buffer {
+			delete(u.buffer, k)
+		}
 
-		maps.Copy(batch, sh.Data)
+		maps.Copy(u.buffer, sh.Data)
 
 		sh.Data = make(map[int]int64) // После сброса кэш очищается.
 		sh.Mu.Unlock()
 
-		if len(batch) == 0 {
+		if len(u.buffer) == 0 {
 			continue
 		}
 		// Ошибка в одном батче не останавливает другие
-		u.repository.BatchData(ctx, batch)
+		u.repository.BatchData(ctx, u.buffer)
 	}
 }
 

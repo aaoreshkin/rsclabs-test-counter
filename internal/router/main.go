@@ -6,7 +6,6 @@ import (
 
 	"github.com/aaoreshkin/click-counter/internal"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/render"
 )
 
 type (
@@ -27,10 +26,6 @@ type (
 func New(ctx context.Context, manager *internal.Manager) (*Mux, error) {
 
 	router := &Mux{chi.NewRouter(), manager}
-
-	router.Use(
-		render.SetContentType(render.ContentTypeJSON),
-	)
 
 	router.Route("/v1", func(r chi.Router) {
 
